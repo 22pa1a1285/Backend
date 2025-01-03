@@ -51,9 +51,20 @@ const addProduct = async(req, res) => {
     }
 }
 
-const getProductByFirm = async(req, res) => {
+const getProductByFirm = async (req, res) => {
     try {
         const firmId = req.params.firmId;
+
+        // Validate that firmId is provided
+        if (!firmId) {
+            return res.status(400).json({ error: "Firm ID is required." });
+        }
+
+        // Validate that firmId is a valid ObjectId
+        if (!firmId.match(/^[0-9a-fA-F]{24}$/)) {
+            return res.status(400).json({ error: "Invalid Firm ID format." });
+        }
+
         const firm = await Firm.findById(firmId);
 
         if (!firm) {
@@ -66,9 +77,10 @@ const getProductByFirm = async(req, res) => {
         res.status(200).json({ restaurantName, products });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Internal server error" })
+        res.status(500).json({ error: "Internal server error" });
     }
-}
+};
+
 
 const deleteProductById = async(req, res) => {
     try {
