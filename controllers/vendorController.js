@@ -39,9 +39,17 @@ const vendorLogin = async(req, res) => {
     const { email, password } = req.body;
     try {
         const vendor = await Vendor.findOne({ email });
-        if (!vendor || !(await bcrypt.compare(password, vendor.password))) {
-            return res.status(401).json({ error: "Invalid username or password" })
+        if (!vendor) {
+            console.log("Vendor not found:", email);
+            return res.status(401).json({ error: "Invalid username or password" });
         }
+        
+        const isPasswordValid = await bcrypt.compare(password, vendor.password);
+        if (!isPasswordValid) {
+            console.log("Password mismatch for vendor:", email);
+            return res.status(401).json({ error: "Invalid username or password" });
+        }
+        
         const token = jwt.sign({ vendorId: vendor._id }, secretKey, { expiresIn: "1h" })
 
         const vendorId = vendor._id;
@@ -67,7 +75,8 @@ const getAllVendors = async(req, res) => {
 
 
 const getVendorById = async(req, res) => {
-    const vendorId = req.params.apple;
+    const vendorId = req.params.vendorId; // Correct parameter name
+
 
     try {
         const vendor = await Vendor.findById(vendorId).populate('firm');
